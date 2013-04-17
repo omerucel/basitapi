@@ -15,63 +15,6 @@ from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from basitapi.exception import ApiException
 from basitapi.response import ApiResponse
 
-"""
-def oauth2_login(request):
-    if request.user.is_authenticated == True:
-        return HttpResponseRedirect('/oauth2/authorize')
-
-    template_params = {}
-    if request.method == 'POST':
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
-        user = authenticate(username=username,password=password)
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                return HttpResponseRedirect('/oauth2/authorize')
-            else:
-                return HttpResponseRedirect('/oauth2/login')
-        else:
-            template_params['user_info_error'] = True
-
-    template_params.update(csrf(request))
-
-    return render_to_response('oauth2/login.html', template_params)
-
-@login_required(login_url='/oauth2/login')
-def missing_redirect_uri(request):
-    return render_to_response('oauth2/missing_redirect_uri.html',{},RequestContext(request))
-
-@login_required(login_url='/oauth2/login')
-def authorize(request):
-    authorizer = Authorizer()
-    try:
-        authorizer.validate(request)
-    except MissingRedirectURI, e:
-        return HttpResponseRedirect('/oauth2/missing_redirect_uri')
-    except AuthorizationException, e:
-        return authorizer.error_redirect()
-
-    if request.method == 'GET':
-        template_params = {
-            'client' : authorizer.client,
-            'access_ranges' : authorizer.access_ranges,
-            'form_action' : '/oauth2/authorize?%s' % authorizer.query_string
-        }
-        template_params.update(csrf(request))
-
-        return render_to_response('oauth2/authorize.html', template_params, RequestContext(request))
-    elif request.method == 'POST':
-        form = AuthorizeForm(request.POST)
-        if form.is_valid():
-            if request.POST.get('connect') == "Yes":
-                return authorizer.grant_redirect()
-            else:
-                return authorizer.error_redirect()
-
-    return HttpResponseRedirect('/')
-"""
-
 class ApiView(View):
     """
     View sınıflarına Api desteği kazandırır.
@@ -88,8 +31,17 @@ class ApiView(View):
         Gelen istek application/x-www-form-urlencoded ile gönderilmişse
         raw_post_data içindeki veriler objeye çevrilir ve request.REQUEST güncellenir.
         """
-        if request.META.get('CONTENT_TYPE') == 'application/x-www-form-urlencoded' and request.method in ['PUT']:
-            request.REQUEST.dicts = (request.POST, request.GET, simplejson.loads(request.raw_post_data))
+
+        if django.VERSION[0] >= 1 and django.VERSION[1] > 4:
+            request_body = request.body
+        else:
+            request_body = request.raw_post_data
+
+        if 'application/x-www-form-urlencoded' in request.META.get('CONTENT_TYPE', '') and request.method in ['PUT']:
+            request.REQUEST.dicts = (request.POST, request.GET, simplejson.loads(request_body))
+
+        if 'application/json' in request.META.get('CONTENT_TYPE', ''):
+            request.REQUEST.dicts = (request.POST, request.GET, simplejson.loads(request_body))
 
         try:
             # Yanıt formatını belirlemek için önce HTTP_ACCEPT kontrol ediliyor.
