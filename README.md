@@ -1,4 +1,4 @@
-# BasitApi
+# BasitApi [![Build Status](https://travis-ci.org/omerucel/basitapi.png)](https://travis-ci.org/omerucel/basitapi)
 
 RESTful API oluşturmanızda size yardımcı olan basit bir kütüphane. Django'nun
 sınıf temelli View yapısı üzerine kurulu. Bir RESTful API'de olması gereken
