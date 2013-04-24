@@ -1,4 +1,5 @@
-django
+-r requirements.txt
 django-nose
 coverage
 fabric
+factory-boy

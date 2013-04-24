@@ -1,5 +1,7 @@
 #-*- coding: utf-8 -*-
 
+import django
+
 from django.utils import simplejson
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
@@ -68,8 +70,6 @@ class ApiView(View):
 
             response = handler(request, *args, **kwargs)
         except ApiException, error:
-            import traceback
-            traceback.print_exc()
             data = {
                 'message' : error.message,
                 'status' : error.status
@@ -80,8 +80,6 @@ class ApiView(View):
 
             response = ApiResponse(data, error.status)
         except Exception, error:
-            import traceback
-            traceback.print_exc()
             response = ApiResponse({
                 'message' : 'Internal Server Error',
                 'status' : 500
