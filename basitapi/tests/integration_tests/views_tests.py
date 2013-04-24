@@ -102,7 +102,7 @@ class ViewTest(TestCase):
         data = simplejson.loads(response.content)
         self.assertEquals(data.get('data'), 567)
 
-        response = self.client.delete('/sample', {"data": 891}, content_type='application/x-www-form-urlencoded')
+        response = self.client.delete('/sample?data=891')
         data = simplejson.loads(response.content)
         self.assertEquals(data.get('data'), 891)
 
