@@ -24,6 +24,8 @@ basitapi.egg-info/requires.txt
 basitapi.egg-info/top_level.txt
 basitapi/tests/__init__.py
 basitapi/tests/__init__.pyc
+basitapi/tests/decorators_tests.py
+basitapi/tests/decorators_tests.pyc
 basitapi/tests/exception_tests.py
 basitapi/tests/exception_tests.pyc
 basitapi/tests/factories.py
