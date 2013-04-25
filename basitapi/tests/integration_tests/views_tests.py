@@ -1,11 +1,9 @@
 from django.test import TestCase
 from django.utils import simplejson
-from django.contrib.sessions.backends.db import SessionStore
 
 from basitapi.views import ApiView
 from basitapi.response import ApiResponse
 from basitapi.exception import ApiException
-from basitapi.decorators import check_session
 
 from basitapi.tests.factories import UserFactory
 
@@ -42,17 +40,7 @@ class SampleErrorView(ApiView):
         raise ApiException('Hata - PUT', status=401, application_code=50)
 
     def delete(self, request):
-        return ApiResponse({
-            'ok' : ok
-        })
-
-class SampleSessionView(ApiView):
-    @check_session
-    def get(self, request):
-        return ApiResponse({
-            'user_id' : request.user.id,
-            'session_key' : request.session_store.session_key
-        })
+        raise Exception('test')
 
 class ViewTest(TestCase):
     urls = 'basitapi.tests.urls'
@@ -113,36 +101,6 @@ class ViewTest(TestCase):
         response = self.client.get('/sample.xml')
         self.assertEquals(response._headers['content-type'][1], 'text/xml; charset=utf-8');
 
-    def test_session(self):
-        response = self.client.get('/session.json')
-        data = simplejson.loads(response.content)
-        self.assertEquals(data.get('message'), 'Unauthorized')
-        self.assertEquals(data.get('status'), 401)
-
-        user_one = UserFactory.create()
-
-        session_store = SessionStore()
-        session_store['_auth_user_id'] = user_one.id
-        session_store['_auth_user_backend'] = 'django.contrib.auth.backends.ModelBackend'
-        session_store.save()
-
-
-        response = self.client.get('/session', {'session_key' : session_store.session_key})
-        data = simplejson.loads(response.content)
-        self.assertEquals(data.get('user_id'), user_one.id)
-        self.assertEquals(data.get('session_key'), session_store.session_key)
-
-        session_store = SessionStore()
-        session_store['_auth_user_id'] = 3
-        session_store['_auth_user_backend'] = 'django.contrib.auth.backends.ModelBackend'
-        session_store.save()
-
-        response = self.client.get('/session', {'session_key' : session_store.session_key})
-        data = simplejson.loads(response.content)
-        self.assertEquals(response.status_code, 401)
-        self.assertEquals(data.get('status'), 401)
-
-
     def test_suppress_response_code(self):
         response = self.client.get('/error.json', {'suppress_response_codes':1})
         data = simplejson.loads(response.content)
@@ -169,3 +127,9 @@ class ViewTest(TestCase):
         response = self.client.post('/error')
         data = simplejson.loads(response.content)
         self.assertEquals(data.get('status'), 405)
+
+    def test_http_content_type_json(self):
+        response = self.client.post('/sample', '{"data": 123456}', content_type='application/json')
+        data = simplejson.loads(response.content)
+        self.assertEquals(data.get('data'), 123456)
+
